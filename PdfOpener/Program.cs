@@ -1,10 +1,12 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Text;
+using UglyToad.PdfPig;
 
 namespace PdfOpener;
 
 internal static class Program
 {
+    private const int DefaultWrapWidth = 100;
+
     private static int Main(string[] args)
     {
         if (args.Length == 0)
@@ -24,8 +26,8 @@ internal static class Program
 
         try
         {
-            OpenPdf(fullPath);
-            Console.WriteLine($"Opening '{fullPath}' with the system default PDF viewer.");
+            using var document = PdfDocument.Open(fullPath);
+            RunViewer(document, fullPath);
             return 0;
         }
         catch (Exception ex)
@@ -35,25 +37,122 @@ internal static class Program
         }
     }
 
-    private static void OpenPdf(string path)
+    private static void RunViewer(PdfDocument document, string fullPath)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        Console.WriteLine($"Loaded '{fullPath}' ({document.NumberOfPages} pages).");
+        Console.WriteLine("Commands: [n]ext, [p]revious, page number, or [q]uit.");
+
+        var pageNumber = 1;
+
+        while (true)
         {
-            Process.Start(new ProcessStartInfo
+            DisplayPage(document, pageNumber);
+            Console.Write("Command [n/p/number/q]: ");
+            var input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrEmpty(input) || input.Equals("n", StringComparison.OrdinalIgnoreCase))
             {
-                FileName = path,
-                UseShellExecute = true
-            });
+                if (pageNumber < document.NumberOfPages)
+                {
+                    pageNumber++;
+                }
+                else
+                {
+                    Console.WriteLine("Already at the last page.");
+                }
+
+                continue;
+            }
+
+            if (input.Equals("p", StringComparison.OrdinalIgnoreCase))
+            {
+                if (pageNumber > 1)
+                {
+                    pageNumber--;
+                }
+                else
+                {
+                    Console.WriteLine("Already at the first page.");
+                }
+
+                continue;
+            }
+
+            if (input.Equals("q", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Exiting viewer.");
+                return;
+            }
+
+            if (int.TryParse(input, out var requestedPage))
+            {
+                if (requestedPage < 1 || requestedPage > document.NumberOfPages)
+                {
+                    Console.WriteLine($"Enter a page number between 1 and {document.NumberOfPages}.");
+                }
+                else
+                {
+                    pageNumber = requestedPage;
+                }
+
+                continue;
+            }
+
+            Console.WriteLine("Unknown command. Use n, p, q, or a page number.");
+        }
+    }
+
+    private static void DisplayPage(PdfDocument document, int pageNumber)
+    {
+        var page = document.GetPage(pageNumber);
+        var text = page.Text ?? string.Empty;
+
+        Console.WriteLine();
+        Console.WriteLine(new string('-', 80));
+        Console.WriteLine($"Page {pageNumber}/{document.NumberOfPages}");
+        Console.WriteLine(new string('-', 80));
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            Console.WriteLine("[This page has no extractable text.]");
+            Console.WriteLine();
             return;
         }
 
-        var opener = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open";
-
-        Process.Start(new ProcessStartInfo
+        foreach (var line in WrapText(text, DefaultWrapWidth))
         {
-            FileName = opener,
-            ArgumentList = { path },
-            UseShellExecute = false
-        });
+            Console.WriteLine(line);
+        }
+
+        Console.WriteLine();
+    }
+
+    private static IEnumerable<string> WrapText(string text, int wrapWidth)
+    {
+        var lineBuilder = new StringBuilder();
+        var words = text.Split([' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var word in words)
+        {
+            var willWrap = lineBuilder.Length > 0 && lineBuilder.Length + word.Length + 1 > wrapWidth;
+
+            if (willWrap)
+            {
+                yield return lineBuilder.ToString();
+                lineBuilder.Clear();
+            }
+
+            if (lineBuilder.Length > 0)
+            {
+                lineBuilder.Append(' ');
+            }
+
+            lineBuilder.Append(word);
+        }
+
+        if (lineBuilder.Length > 0)
+        {
+            yield return lineBuilder.ToString();
+        }
     }
 }

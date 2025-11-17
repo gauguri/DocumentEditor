@@ -6,4 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseAppHost>true</UseAppHost>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="UglyToad.PdfPig" Version="0.1.9" />
+  </ItemGroup>
 </Project>
