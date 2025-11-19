@@ -10,6 +10,8 @@ using iText.Kernel.Pdf.Annot;
 using iText.Kernel.Pdf.Canvas;
 using PdfEditor.Models;
 using PdfEditor.ViewModels;
+using PdfPoint = iText.Kernel.Geom.Point;
+using WpfPoint = System.Windows.Point;
 
 namespace PdfEditor.Services
 {
@@ -164,17 +166,17 @@ namespace PdfEditor.Services
 
         private static Rectangle ToPdfRect(Rect bounds, PageViewModel pageVm)
         {
-            var bottomLeft = ToPdfPoint(new Point(bounds.X, bounds.Y + bounds.Height), pageVm);
+            var bottomLeft = ToPdfPoint(new WpfPoint(bounds.X, bounds.Y + bounds.Height), pageVm);
             var width = bounds.Width / pageVm.PixelWidth * pageVm.PageWidth;
             var height = bounds.Height / pageVm.PixelHeight * pageVm.PageHeight;
             return new Rectangle((float)bottomLeft.X, (float)bottomLeft.Y, (float)width, (float)height);
         }
 
-        private static Point ToPdfPoint(Point point, PageViewModel pageVm)
+        private static PdfPoint ToPdfPoint(WpfPoint point, PageViewModel pageVm)
         {
             var x = point.X / pageVm.PixelWidth * pageVm.PageWidth;
             var y = pageVm.PageHeight - (point.Y / pageVm.PixelHeight * pageVm.PageHeight);
-            return new Point(x, y);
+            return new PdfPoint(x, y);
         }
 
         private static DeviceRgb ToDeviceRgb(System.Windows.Media.Color color) => new(color.R, color.G, color.B);
