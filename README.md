@@ -16,7 +16,8 @@ A lightweight WPF PDF viewer/editor built with .NET 8 and MVVM. The app renders 
 
 - Windows 10/11
 - .NET 8 SDK
-- Native PDFium binaries are pulled automatically via the `PdfiumViewer.Native.x64.v8` / `PdfiumViewer.Native.x86.v8` packages. No extra manual steps are required beyond `dotnet restore` on Windows. If you publish self-contained, ensure you target `win-x64` or `win-x86` so the packaged native binaries are copied to the output.
+- Native PDFium binaries are required at runtime. Because the `PdfiumViewer.Native.*` packages are no longer available on NuGet, download the appropriate `pdfium.dll` from the [official PDFium binaries repository](https://github.com/bblanchon/pdfium-binaries/releases) and place it next to `PdfEditor.exe` (for both x64 and x86 builds, pick the matching architecture).
+- NuGet restore will emit a compatibility warning for `PdfiumViewer` because it targets older .NET Framework TFMs; this is expected and the package works on `net8.0-windows` when the native `pdfium.dll` is present.
 
 ## Build & run
 
@@ -37,6 +38,7 @@ A lightweight WPF PDF viewer/editor built with .NET 8 and MVVM. The app renders 
    dotnet publish PdfEditor/PdfEditor.csproj -c Release -r win-x64 --self-contained false
    ```
    The output `PdfEditor.exe` will be under `PdfEditor/bin/Release/net8.0-windows/win-x64/publish/`.
+5. Place the downloaded `pdfium.dll` (matching your architecture) in the same folder as `PdfEditor.exe` before running or distributing the app. If you publish `win-x86`, use the x86 PDFium build; for `win-x64`, use the x64 build.
 
 ## Features
 
@@ -55,4 +57,4 @@ A lightweight WPF PDF viewer/editor built with .NET 8 and MVVM. The app renders 
 
 ## Native dependencies
 
-The `PdfiumViewer.Native.x64.v8` / `PdfiumViewer.Native.x86.v8` NuGet packages embed the required PDFium binaries for Windows. When publishing, ensure you target the appropriate runtime identifier so the matching native DLLs are copied alongside the executable.
+Since the native NuGet bundles are unavailable, you must manually supply `pdfium.dll` beside the built executable. The [pdfium-binaries releases](https://github.com/bblanchon/pdfium-binaries/releases) provide zipped builds for Windows x64 and x86; extract and copy the single `pdfium.dll` that matches your build architecture.
