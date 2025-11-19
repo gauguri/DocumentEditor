@@ -8,8 +8,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="PdfiumViewer" Version="2.13.0" />
-    <PackageReference Include="PdfiumViewer.Native.x64" Version="2.13.0" />
-    <PackageReference Include="PdfiumViewer.Native.x86" Version="2.13.0" />
+    <PackageReference Include="PdfiumViewer.Native.x64.v8" Version="2.13.0" />
+    <PackageReference Include="PdfiumViewer.Native.x86.v8" Version="2.13.0" />
     <PackageReference Include="itext7" Version="7.2.5" />
   </ItemGroup>
 </Project>

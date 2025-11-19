@@ -16,7 +16,7 @@ A lightweight WPF PDF viewer/editor built with .NET 8 and MVVM. The app renders 
 
 - Windows 10/11
 - .NET 8 SDK
-- Native PDFium binaries are pulled automatically via the `PdfiumViewer.Native` packages (x64/x86). No extra manual steps are required beyond `dotnet restore` on Windows. If you publish self-contained, ensure you target `win-x64` or `win-x86` so the packaged native binaries are copied to the output.
+- Native PDFium binaries are pulled automatically via the `PdfiumViewer.Native.x64.v8` / `PdfiumViewer.Native.x86.v8` packages. No extra manual steps are required beyond `dotnet restore` on Windows. If you publish self-contained, ensure you target `win-x64` or `win-x86` so the packaged native binaries are copied to the output.
 
 ## Build & run
 
@@ -55,4 +55,4 @@ A lightweight WPF PDF viewer/editor built with .NET 8 and MVVM. The app renders 
 
 ## Native dependencies
 
-The `PdfiumViewer.Native` NuGet packages embed the required PDFium binaries for Windows x86/x64. When publishing, ensure you target the appropriate runtime identifier so the matching native DLLs are copied alongside the executable.
+The `PdfiumViewer.Native.x64.v8` / `PdfiumViewer.Native.x86.v8` NuGet packages embed the required PDFium binaries for Windows. When publishing, ensure you target the appropriate runtime identifier so the matching native DLLs are copied alongside the executable.
