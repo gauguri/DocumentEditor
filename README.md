@@ -1,32 +1,60 @@
-# PdfOpener
+# PDF Viewer & Editor (WPF)
 
-A simple cross-platform .NET console application that opens and previews a PDF file without relying on external viewers.
+A lightweight WPF PDF viewer/editor built with .NET 8 and MVVM. The app renders PDFs with PDFium, lets you add annotations (text, highlights, shapes, freehand ink, and comments), insert/delete pages, and save an edited copy.
 
-## Usage
+## Project layout
 
-Build and run the application with the path to the PDF you want to open:
+- `PdfEditor/` – WPF desktop app
+  - `Views/` – `MainWindow` with menu bar, thumbnail sidebar, toolbar, zoom controls, and canvas overlay
+  - `ViewModels/` – MVVM layer for pages, annotations, and commands
+  - `Models/` – DTOs for pages, annotations, tool options
+  - `Services/` – Rendering (PDFium) and saving (iText 7) logic plus file dialogs
+  - `Converters/` – UI visibility helpers for annotation templates
+- `PdfOpener/` – original console sample (left intact)
 
-```bash
-dotnet build PdfOpener
+## Prerequisites
 
-dotnet run --project PdfOpener -- /path/to/document.pdf
-```
+- Windows 10/11
+- .NET 8 SDK
+- Native PDFium binaries are required at runtime. Because the `PdfiumViewer.Native.*` packages are no longer available on NuGet, download the appropriate `pdfium.dll` from the [official PDFium binaries repository](https://github.com/bblanchon/pdfium-binaries/releases) and place it next to `PdfEditor.exe` (for both x64 and x86 builds, pick the matching architecture).
+- NuGet restore will emit a compatibility warning for `PdfiumViewer` because it targets older .NET Framework TFMs; this is expected and the package works on `net8.0-windows` when the native `pdfium.dll` is present.
 
-Once a PDF is loaded, the app provides an interactive reader:
+## Build & run
 
-- `n` or **Enter**: move to the next page
-- `p`: move to the previous page
-- A page number (e.g., `5`): jump directly to that page
-- `q`: quit the viewer
+1. Restore packages:
+   ```bash
+   dotnet restore PdfEditor/PdfEditor.csproj
+   ```
+2. Build the WPF app:
+   ```bash
+   dotnet build PdfEditor/PdfEditor.csproj -c Release
+   ```
+3. Run (from Windows):
+   ```bash
+   dotnet run --project PdfEditor/PdfEditor.csproj
+   ```
+4. Publish a distributable executable (example for x64):
+   ```bash
+   dotnet publish PdfEditor/PdfEditor.csproj -c Release -r win-x64 --self-contained false
+   ```
+   The output `PdfEditor.exe` will be under `PdfEditor/bin/Release/net8.0-windows/win-x64/publish/`.
+5. Place the downloaded `pdfium.dll` (matching your architecture) in the same folder as `PdfEditor.exe` before running or distributing the app. If you publish `win-x86`, use the x86 PDFium build; for `win-x64`, use the x64 build.
 
-The app extracts text from each page and wraps it for easy reading. If a page does not contain text (for example, image-only pages), the viewer will indicate that no extractable text is available.
+## Features
 
-To produce a platform-specific executable (instead of the framework-dependent DLL), publish the app:
+- Scrollable, zoomable page canvas with thumbnail sidebar
+- Toolbar with pointer, highlight, text, rectangle, ellipse, freehand ink, and comment tools
+- Insert blank pages after the current selection or delete pages
+- Save annotations into a new PDF file using iText 7
+- Zoom controls (fit page, fit width, +/- slider)
 
-```bash
-dotnet publish PdfOpener -c Release
-```
+## Notes on editing
 
-The resulting executable will be available at `PdfOpener/bin/Release/net8.0/<OS>/publish/` where `<OS>` matches your platform (for example, `win-x64` or `linux-x64`).
+- Highlights and shapes are drawn with a click-and-drag gesture.
+- Text and comment annotations are placed with a single click using the values from the toolbar text boxes.
+- Freehand ink tracks the mouse path until release.
+- Inserted pages inherit the current page size; they render as blank white canvases until annotated.
 
-The app validates that the file exists and then loads its content directly using `UglyToad.PdfPig`, avoiding the system's default PDF viewer.
+## Native dependencies
+
+Since the native NuGet bundles are unavailable, you must manually supply `pdfium.dll` beside the built executable. The [pdfium-binaries releases](https://github.com/bblanchon/pdfium-binaries/releases) provide zipped builds for Windows x64 and x86; extract and copy the single `pdfium.dll` that matches your build architecture.
