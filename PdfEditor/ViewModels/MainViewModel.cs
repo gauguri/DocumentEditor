@@ -104,22 +104,30 @@ namespace PdfEditor.ViewModels
                 return;
             }
 
-            _currentFilePath = file;
             Status = "Loading...";
-            var document = await _renderService.LoadAsync(file);
 
-            var pages = new ObservableCollection<PageViewModel>();
-            foreach (var pageModel in document.Pages)
+            try
             {
-                var viewModel = new PageViewModel(pageModel, pageModel.PageNumber);
-                await _renderService.RenderPageAsync(pageModel.PageNumber, viewModel, 1.0);
-                await _renderService.RenderThumbnailAsync(pageModel.PageNumber, viewModel, 0.2);
-                pages.Add(viewModel);
-            }
+                var document = await _renderService.LoadAsync(file);
 
-            Pages = pages;
-            SelectedPage = Pages.FirstOrDefault();
-            Status = $"Loaded {Pages.Count} pages";
+                var pages = new ObservableCollection<PageViewModel>();
+                foreach (var pageModel in document.Pages)
+                {
+                    var viewModel = new PageViewModel(pageModel, pageModel.PageNumber);
+                    await _renderService.RenderPageAsync(pageModel.PageNumber, viewModel, 1.0);
+                    await _renderService.RenderThumbnailAsync(pageModel.PageNumber, viewModel, 0.2);
+                    pages.Add(viewModel);
+                }
+
+                Pages = pages;
+                SelectedPage = Pages.FirstOrDefault();
+                _currentFilePath = file;
+                Status = $"Loaded {Pages.Count} pages";
+            }
+            catch (Exception ex)
+            {
+                Status = $"Failed to open PDF: {ex.Message}";
+            }
         }
 
         public void InsertPageAfterSelection()
@@ -208,8 +216,16 @@ namespace PdfEditor.ViewModels
             }
 
             Status = "Saving...";
-            await _editingService.SaveAsync(_currentFilePath, targetPath, Pages.ToList());
-            Status = $"Saved to {targetPath}";
+
+            try
+            {
+                await _editingService.SaveAsync(_currentFilePath, targetPath, Pages.ToList());
+                Status = $"Saved to {targetPath}";
+            }
+            catch (Exception ex)
+            {
+                Status = $"Failed to save PDF: {ex.Message}";
+            }
         }
     }
 }
