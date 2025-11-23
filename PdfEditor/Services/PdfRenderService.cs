@@ -51,8 +51,8 @@ namespace PdfEditor.Services
             int width = (int)(size.Width * 96 / 72 * scale);
             int height = (int)(size.Height * 96 / 72 * scale);
 
-            var bitmap = await Task.Run(() => _document.Render(pageNumber - 1, width, height, 96, 96, PdfRenderFlags.ForPrinting));
-            viewModel.PageImage = ToBitmapSource(bitmap);
+            var image = await Task.Run(() => _document.Render(pageNumber - 1, width, height, 96, 96, PdfRenderFlags.ForPrinting));
+            viewModel.PageImage = ToBitmapSource((Bitmap)image);
             viewModel.PixelWidth = width;
             viewModel.PixelHeight = height;
             viewModel.PageWidth = size.Width;
@@ -69,8 +69,8 @@ namespace PdfEditor.Services
             var size = _document.PageSizes[pageNumber - 1];
             int width = (int)(size.Width * 96 / 72 * scale);
             int height = (int)(size.Height * 96 / 72 * scale);
-            var bitmap = await Task.Run(() => _document.Render(pageNumber - 1, Math.Max(width, 60), Math.Max(height, 80), 96, 96, PdfRenderFlags.Annotations));
-            viewModel.Thumbnail = ToBitmapSource(bitmap);
+            var image = await Task.Run(() => _document.Render(pageNumber - 1, Math.Max(width, 60), Math.Max(height, 80), 96, 96, PdfRenderFlags.Annotations));
+            viewModel.Thumbnail = ToBitmapSource((Bitmap)image);
         }
 
         public BitmapSource CreateBlankPage(double pageWidth, double pageHeight)

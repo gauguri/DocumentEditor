@@ -11,6 +11,7 @@ using iText.Kernel.Pdf.Canvas;
 using PdfEditor.Models;
 using PdfEditor.ViewModels;
 using PdfPoint = iText.Kernel.Geom.Point;
+using SystemPath = System.IO.Path;
 using WpfPoint = System.Windows.Point;
 
 namespace PdfEditor.Services
@@ -19,7 +20,7 @@ namespace PdfEditor.Services
     {
         public async Task SaveAsync(string sourceFile, string targetFile, IList<PageViewModel> pages)
         {
-            var temp = Path.GetTempFileName();
+            var temp = SystemPath.GetTempFileName();
 
             await Task.Run(() => CopyPagesWithInsertions(sourceFile, temp, pages));
             await Task.Run(() => ApplyAnnotations(temp, targetFile, pages));
@@ -92,7 +93,7 @@ namespace PdfEditor.Services
             var font = iText.Kernel.Font.PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
             canvas.BeginText();
             canvas.SetFontAndSize(font, 12);
-            canvas.MoveText((float)start.X, (float)start.Y + 12);
+            canvas.MoveText((float)start.GetX(), (float)start.GetY() + 12);
             canvas.SetFillColor(ToDeviceRgb(model.Stroke));
             canvas.ShowText(model.Text);
             canvas.EndText();
@@ -142,11 +143,11 @@ namespace PdfEditor.Services
             canvas.SetLineWidth((float)model.StrokeThickness);
 
             var start = ToPdfPoint(model.Points[0], pageVm);
-            canvas.MoveTo((float)start.X, (float)start.Y);
+            canvas.MoveTo((float)start.GetX(), (float)start.GetY());
             for (int i = 1; i < model.Points.Count; i++)
             {
                 var p = ToPdfPoint(model.Points[i], pageVm);
-                canvas.LineTo((float)p.X, (float)p.Y);
+                canvas.LineTo((float)p.GetX(), (float)p.GetY());
             }
 
             canvas.Stroke();
@@ -156,10 +157,8 @@ namespace PdfEditor.Services
         private static void AddComment(PdfPage page, PageViewModel pageVm, AnnotationModel model)
         {
             var rect = ToPdfRect(model.Bounds, pageVm);
-            var annotation = new PdfTextAnnotation(rect)
-            {
-                Contents = new iText.Kernel.Pdf.PdfString(model.Text)
-            };
+            var annotation = new PdfTextAnnotation(rect);
+            annotation.SetContents(new iText.Kernel.Pdf.PdfString(model.Text));
             annotation.SetColor(ToDeviceRgb(model.Fill));
             page.AddAnnotation(annotation);
         }
@@ -169,7 +168,7 @@ namespace PdfEditor.Services
             var bottomLeft = ToPdfPoint(new WpfPoint(bounds.X, bounds.Y + bounds.Height), pageVm);
             var width = bounds.Width / pageVm.PixelWidth * pageVm.PageWidth;
             var height = bounds.Height / pageVm.PixelHeight * pageVm.PageHeight;
-            return new Rectangle((float)bottomLeft.X, (float)bottomLeft.Y, (float)width, (float)height);
+            return new Rectangle((float)bottomLeft.GetX(), (float)bottomLeft.GetY(), (float)width, (float)height);
         }
 
         private static PdfPoint ToPdfPoint(WpfPoint point, PageViewModel pageVm)

@@ -63,5 +63,10 @@ namespace PdfEditor.ViewModels
             get => _pageHeight;
             set => SetProperty(ref _pageHeight, value);
         }
+
+        public void RefreshDisplayPageNumber()
+        {
+            OnPropertyChanged(nameof(DisplayPageNumber));
+        }
     }
 }
