@@ -178,7 +178,7 @@ namespace PdfEditor.ViewModels
             for (int i = 0; i < Pages.Count; i++)
             {
                 Pages[i].Model.PageNumber = i + 1;
-                Pages[i].OnPropertyChanged(nameof(PageViewModel.DisplayPageNumber));
+                Pages[i].RefreshDisplayPageNumber();
             }
 
             Status = $"Pages: {Pages.Count}";
